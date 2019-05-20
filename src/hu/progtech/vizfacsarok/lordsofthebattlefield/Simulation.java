@@ -1,17 +1,16 @@
 package hu.progtech.vizfacsarok.lordsofthebattlefield;
 
-import hu.progtech.vizfacsarok.lordsofthebattlefield.BaseWindow;
-import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.Barrack;
-import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.Farm;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.*;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.units.*;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -21,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Attacker;
 
 public class Simulation extends BaseWindow implements KeyListener {
     
@@ -95,10 +93,7 @@ public class Simulation extends BaseWindow implements KeyListener {
         getContentPane().add(actionPanel, BorderLayout.SOUTH);
         updatemainp();
         updateactionp();
-        
-        
-        
-        
+        endGame(1);
     }
     
     private void addButton(JPanel panel,final int ib, final int jb) {
@@ -155,7 +150,12 @@ public class Simulation extends BaseWindow implements KeyListener {
                     marked = false;
                     updatemainp();
                 }else if(contains2){
-                    ((Attacker)map.getUnit(markedelement[0], markedelement[1])).attack(map, map.getUnit(i, j));
+                    if(map.getUnit(i, j) != null){
+                        ((Attacker)map.getUnit(markedelement[0], markedelement[1])).attack(map, map.getUnit(i, j));
+                    }else{
+                        if(/*((Attacker)map.getUnit(markedelement[0], markedelement[1])).attack(map, map.getBuilding(i, j))*/false)endGame(actualplayer);
+                            
+                    }
                     marked = false;
                     updatemainp();
                 }else{
@@ -304,10 +304,13 @@ public class Simulation extends BaseWindow implements KeyListener {
                 int value = map.getTerrain(i + cameray, j + camerax);
                 int px = (value - 1) * 120;
                 landp = lands.getSubimage(px,0, 120, 120);
-                if(map.getUnit(i + cameray, j + camerax) != null && map.getPossess(i + cameray, j + camerax) == 1)landp =  lands.getSubimage(240,0, 120, 120);
-                if(map.getUnit(i + cameray, j + camerax) != null && map.getPossess(i + cameray, j + camerax) == 2)landp =  lands.getSubimage(120,120, 120, 120);
-                if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Farm)landp =  lands.getSubimage(360,0, 120, 120);
-                if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Barrack)landp =  lands.getSubimage(360,120, 120, 120);
+                if(map.getUnit(i + cameray, j + camerax) != null && map.getPossess(i + cameray, j + camerax) == 1)landp =  lands.getSubimage(0,1080, 120, 120);
+                else if(map.getUnit(i + cameray, j + camerax) != null && map.getPossess(i + cameray, j + camerax) == 2)landp =  lands.getSubimage(360,1080, 120, 120);
+                else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Farm)landp =  lands.getSubimage(0,120, 120, 120);
+                else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Sawmill)landp =  lands.getSubimage(0,240, 120, 120);
+                else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Quarry)landp =  lands.getSubimage(0,360, 120, 120);
+                else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof GoldMine)landp =  lands.getSubimage(0,480, 120, 120);
+                else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Barrack)landp =  lands.getSubimage(0,600, 120, 120);
                 landsc = new ImageIcon(landp);
                 button.setIcon(landsc);
             }
@@ -389,37 +392,35 @@ public class Simulation extends BaseWindow implements KeyListener {
     }
     
     private void updatemainpAttackp(int x,int y) {
-        Image land = null;
+        BufferedImage lands = null;
+        ImageIcon landsc = null;
         try {
-            land = ImageIO.read(getClass().getResource("source/photo/landmarkedpink.png"));
+            lands = ImageIO.read(getClass().getResource("source/photo/land.png"));
         } catch (IOException ex) {
             Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ImageIcon landc = new ImageIcon(land);
-        ArrayList<int[]> positions = ((Attacker)map.getUnit(x, y)).canAttack(map);
+        ArrayList<int[]> positions = map.getUnit(x, y).canMoveTo(map);
+        BufferedImage landp = null;
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 16; j++) {
-                JButton button = (JButton)mainPanel.getComponent(j + 16*i);
-                int value = map.getTerrain(i + cameray, j + camerax);
                 boolean contains = false;
                 for(int k = 0;k < positions.size();k++){
                     if(positions.get(k)[0]- cameray == i && positions.get(k)[1] - camerax == j)contains = true;
                 }
                 if(contains){
-                    switch (value) {
-                        case 1:
-                            button.setIcon(landc);
-                            break;
-                        case 2:
-                            button.setIcon(landc);
-                            break;
-                        default:
-                            break;
-                    }
+                    JButton button = (JButton)mainPanel.getComponent(j + 16*i);
+                    if(map.getUnit(i + cameray, j + camerax) != null && map.getPossess(i + cameray, j + camerax) == 1)landp =  lands.getSubimage(0,1080, 120, 120);
+                    else if(map.getUnit(i + cameray, j + camerax) != null && map.getPossess(i + cameray, j + camerax) == 2)landp =  lands.getSubimage(360,1080, 120, 120);
+                    else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Farm)landp =  lands.getSubimage(0,120, 120, 120);
+                    else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Sawmill)landp =  lands.getSubimage(0,240, 120, 120);
+                    else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Quarry)landp =  lands.getSubimage(0,360, 120, 120);
+                    else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof GoldMine)landp =  lands.getSubimage(0,480, 120, 120);
+                    else if(map.getBuilding(i + cameray, j + camerax) != null && map.getBuilding(i + cameray, j + camerax) instanceof Barrack)landp =  lands.getSubimage(0,600, 120, 120);
+                    landsc = new ImageIcon(landp);
+                    button.setIcon(landsc);
                 }
             }
         }
-        
     }
     
     @Override
@@ -427,5 +428,30 @@ public class Simulation extends BaseWindow implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
-
+    
+    public void endGame(int x) {
+        BufferedImage wictorypic = null;
+        ImageIcon landsc = null;
+        try {
+            if(x == 0){
+                wictorypic = ImageIO.read(getClass().getResource("source/photo/bluevictory.png"));
+            }else{
+                wictorypic = ImageIO.read(getClass().getResource("source/photo/orangevictory.png"));
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        BufferedImage landp = null;
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 16; j++) {
+                JButton button = (JButton)mainPanel.getComponent(j + 16*i);
+                landp =  wictorypic.getSubimage(j*120,i*120, 120, 120);
+                landsc = new ImageIcon(landp);
+                button.setIcon(landsc);
+                for( ActionListener al : button.getActionListeners() ) {
+                    button.removeActionListener( al );
+                }
+            }
+        }
+    }
 }
