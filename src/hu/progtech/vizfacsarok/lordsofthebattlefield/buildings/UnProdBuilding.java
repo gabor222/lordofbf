@@ -1,23 +1,41 @@
 package hu.progtech.vizfacsarok.lordsofthebattlefield.buildings;
 
 import hu.progtech.vizfacsarok.lordsofthebattlefield.Map;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.Player;
 
 public abstract class UnProdBuilding extends Building {
 
-    private int roundcounter = -1;
+    protected int roundcounter = 0;
+    private static final int BUILD_TIME = 3;
+    private int buildTimeLeft;
 
-    public UnProdBuilding(int[] buildCost, int size, int id, int positionX, int positionY, int maxHealth, int owner) {
-        super(buildCost, size, id, positionX, positionY, maxHealth, owner);
+    public UnProdBuilding(int positionX, int positionY, int maxHealth, int owner) {
+        super(positionX, positionY, maxHealth, owner);
+        this.buildTimeLeft = BUILD_TIME;
     }
 
     public int getRoundcounter() {
         return roundcounter;
     }
 
-    public void setRoundcounter(int roundcounter) {
-        this.roundcounter = roundcounter;
+    protected abstract void setRoundcounter(Player player);
+
+    public static int getBUILD_TIME() {
+        return BUILD_TIME;
     }
 
-    protected abstract void releaseUnit(Map map);
+    public int getBuildTimeLeft() {
+        return buildTimeLeft;
+    }
+
+    public void setBuildTimeLeft(int buildTimeLeft) {
+        this.buildTimeLeft = buildTimeLeft;
+    }
+    
+    
+    
+    
+
+    protected abstract boolean releaseUnit(Map map);
 
 }

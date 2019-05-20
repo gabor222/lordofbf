@@ -5,6 +5,7 @@ import java.util.Random;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.Building;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.Farm;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Attacker;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Soldier;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Unit;
 
 public class Map {
@@ -36,33 +37,37 @@ public class Map {
         }
         int[] fakedata = {0,0};
         units = new Unit[size][size];
-        units[0][0] = new Attacker(1, 1, 5, 1, fakedata, fakedata, 1,1,3,1);
+        units[0][0] = new Soldier(1,fakedata);
         possess[0][0] = 1;
         int[] fakedata2 = {3,3};
-        units[3][3] = new Attacker(1, 1, 5, 1, fakedata2, fakedata2, 1,1,3,1);
+        units[3][3] = new Soldier(1,fakedata2);
         possess[3][3] = 1;
         int[] fakedata3 = {3,4};
-        units[3][4] = new Attacker(1, 1, 5, 1, fakedata3, fakedata3, 1,1,3,1);
+        units[3][4] = new Soldier(1,fakedata3);
         possess[3][4] = 1;
         int[] fakedata4 = {3,5};
-        units[3][5] = new Attacker(1, 1, 5, 1, fakedata4, fakedata4, 1,8,3,1);
+        units[3][5] = new Soldier(1,fakedata4);
         possess[3][5] = 1;
         int[] fakedata5 = {3,6};
-        units[3][6] = new Attacker(3, 10, 5, 2, fakedata5, fakedata5, 1,1,3,1);
+        units[3][6] = new Soldier(1,fakedata5);
         possess[3][6] = 2;
         
         buildings = new Building[size][size];
         int[] fakedata6 = {3, 11};
-        buildings[3][11] = new Barrack(fakedata, 1, fakedata6[0], fakedata6[1], 5, 1);
+        buildings[3][11] = new Barrack(fakedata6[0], fakedata6[1], 5, 1);
         possess[3][11] = 1;
         int[] fakedata7 = {2, 10};
-        buildings[2][10] = new Farm(fakedata, 2, fakedata7[0], fakedata7[1], 1, 1, 5, 5);
+        buildings[2][10] = new Farm(fakedata7[0], fakedata7[1], 1, 1, 5, 5);
         possess[2][10] = 1;
         
     }
     
     public Building getBuilding(int i, int j){
         return buildings[i][j];
+    }
+    
+    public void setBuilding(int i, int j, Building building){
+        buildings[i][j] = building;
     }
     
     public int getPossess(int i, int j){
@@ -104,6 +109,9 @@ public class Map {
     public void action(int n) {
         
     }
-    
+
+    public void setTerrain(int x, int y, int i) {
+        terrain[x][y] = i;
+    }
     
 }

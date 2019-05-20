@@ -3,7 +3,7 @@ package hu.progtech.vizfacsarok.lordsofthebattlefield.units;
 import java.util.ArrayList;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.Map;
 
-public class Unit {
+public abstract class Unit {
     private int actionPoint;
     private int armor;
     private int health;
@@ -11,19 +11,15 @@ public class Unit {
     private int movementRange;
     private int owner;
     private int[] position;
-    private int[] productionCost;
-    private int productionTime;
 
-    Unit(int armor,  int maxHealth, int movementRange, int owner, int[] position, int[] productionCost, int productionTime) {
-        this.actionPoint = 2;
+    public Unit(int armor,  int maxHealth, int movementRange, int owner, int[] position) {
+        this.actionPoint = 0;
         this.armor = armor;
         this.maxHealth = maxHealth;
         this.health = maxHealth;
         this.movementRange = movementRange;
         this.owner = owner;
         this.position = position;
-        this.productionCost = productionCost;
-        this.productionTime = productionTime;
     }
 
     public ArrayList<int[]> canMoveTo(Map map) {
@@ -49,9 +45,6 @@ public class Unit {
             from.addAll(to);
             to.clear();
         }
-        for (int k = 0; k < resultList.size(); k++) {
-            int[] tomb = resultList.get(k);
-        }
         return resultList;
     }
 
@@ -66,11 +59,23 @@ public class Unit {
 
     public void move(Map map, int x, int y){
         map.setUnit(x, y, this);
-        map.setPossess(x, y, 1);
+        map.setPossess(x, y, owner);
         map.setPossess(position[0], position[1], 0);
         actionPoint--;
         int[] newPos = {x,y};
         position = newPos;
+    }
+
+    public void die(Map map){
+        map.setPossess(position[0], position[1], 0);
+        map.setUnit(position[0], position[1], null);
+    }
+
+    public abstract int[] getStats();
+
+    public int[] getActions(){
+        int[] actions = { 0,0,0,0,0,0,0,0,0,0,0,1};
+        return actions;
     }
 
     public int getHealth() {
@@ -107,22 +112,6 @@ public class Unit {
 
     public void setPosition(int[] position) {
         this.position = position;
-    }
-
-    public int[] getProductionCost() {
-        return productionCost;
-    }
-
-    public void setProductionCost(int[] productionCost) {
-        this.productionCost = productionCost;
-    }
-
-    public int getProductionTime() {
-        return productionTime;
-    }
-
-    public void setProductionTime(int productionTime) {
-        this.productionTime = productionTime;
     }
 
     public int getActionPoint() {

@@ -2,80 +2,138 @@ package hu.progtech.vizfacsarok.lordsofthebattlefield.buildings;
 
 import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.buildingenums.Infantry;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.Map;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.Player;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Archer;
 import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Unit;
-import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Attacker;
+import hu.progtech.vizfacsarok.lordsofthebattlefield.units.Soldier;
 
 public class Barrack extends UnProdBuilding {
+    
+    private static final int[] BUILD_COST = new int[]{0, 50, 40, 50};
+    private Infantry currentType = Infantry.valueOf("SOLDIER");
 
-    private Infantry currentType = Infantry.valueOf("ATTACKER");
-
-    public Barrack(int[] buildCost, int id, int positionX, int positionY, int maxHealth, int owner) {
-        super(buildCost, 1, id, positionX, positionY, maxHealth, owner);
+    public Barrack(int positionX, int positionY, int maxHealth, int owner) {
+        super(positionX, positionY, maxHealth, owner);
     }
 
     public Infantry getCurrentType() {
         return currentType;
     }
-
+    //amikor rakattintunk a gyartson x tipust parancsra, eloszor a setCurrentType-ot hívja meg, aztan a setRoundcountert
+    //mert a setRoundcounternek tudnia kell az uj tipusrol, hogy jot vizsgaljon
     public void setCurrentType(String currentType) {
+
         this.currentType = Infantry.valueOf(currentType);
+        
+    }
+    
+    @Override
+    public void setRoundcounter(Player player){
+        boolean lacks = false;
+        int[] materials = new int[4];
+        materials[0] = player.getFood();
+        materials[1] = player.getWood();
+        materials[2] = player.getStone();
+        materials[3] = player.getGold();
+        switch (this. currentType) {
+            case SOLDIER :
+                int i = 0;
+                while(!lacks && i < 4){
+                    lacks = Soldier.getProductionCost()[i] > materials[i];
+                    ++i;
+                }
+                break;
+            case ARCHER :
+                int j = 0;
+                while(!lacks && j < 4){
+                    lacks = Archer.getProductionCost()[j] > materials[j];
+                    ++j;
+                }
+                break;
+                
+        }
+        
+        if(!lacks){
+            switch (this.currentType){
+                case SOLDIER :
+                    this.roundcounter = Soldier.getProductionTime();
+                    break;
+                case ARCHER :
+                    this.roundcounter = Archer.getProductionTime();
+                    break;
+            }
+                
+        }
     }
 
     @Override
-    public void releaseUnit(Map map) {
+    public boolean releaseUnit(Map map) {
+            if(this.getPositionY() - 1 >= 0 && map.getPossess(this.getPositionX(), this.getPositionY() - 1) == 0){
+                        int[] position = {this.getPositionX(), this.getPositionY() - 1};
+                switch (currentType) {
+                    case SOLDIER :
+                        //Unit soldier = new Soldier....
+                        Unit soldier = new Soldier(this.getOwner(), position);
+                        map.setUnit(this.getPositionX(), this.getPositionY() -1, soldier);
+                        map.setPossess(this.getPositionX(), this.getPositionY() -1, 1);
+                        break;
+                    case ARCHER :
+                        //Unit archer = new Archer....
+                        Unit archer = new Archer(this.getOwner(), position);
+                        map.setUnit(this.getPositionX(), this.getPositionY() -1, archer);
+                        map.setPossess(this.getPositionX(), this.getPositionY() -1, 1);
+                        break;
+                }
+                return true;
+            } else {
+                return false;
+            }
+        
 		
-		if(currentType == Infantry.valueOf("ATTACKER") && map.getPossess(this.getPositionX(), this.getPositionY() - 1) == 0){
-            int[] position = {this.getPositionX(), this.getPositionY() - 1};
-            int[] cost = {0, 0};
-            Unit attacker = new Attacker(1, 1,5,1, position, cost, 3,3, 3, 3);
-            map.setUnit(this.getPositionX(), this.getPositionY() -1, attacker);
-            map.setPossess(this.getPositionX(), this.getPositionY() -1, 1);
-            System.out.println("valami234");
+		
         }
-		/*boolean isFree = false;
-		int[] free = freeSpaces(map);
-		int i = 0;
-		int freePos;
-		while(!isFree && i < free.length){
-			isFree = (free[i] == 0);
-			freePos = i;
-			++i;
-		}
-        if(currentType == Infantry.valueOf("ATTACKER") && isFree == true){
-			int[] position = new int[2];
-			switch (freePos) {
-				case 0:
-					
-			}
-            int[] position = {this.getPositionX(), this.getPositionY() - 1};
-            int[] cost = {0, 0};
-            Unit attacker = new Attacker(1, 1,5,1, position, cost, 3,3, 3, 3);
-            map.setUnit(this.getPositionX(), this.getPositionY() -1, attacker);
-        }*/
+		
 
-    }
+    
 
     @Override
     public int[] getStats() {
-        int[] stats = new int[3];
-        stats[0] = this.getCurrentHealth();
-        stats[1] = this.getMaxHealth();
-        if(this.currentType == Infantry.valueOf("ATTACKER")){
-            stats[2] = 1;
-        } else{
-            stats[2] = 0;
+        int[] stats = new int[18];
+        if(this.getBuildTimeLeft() > 0){
+            stats[0] = 0;
+            stats[1] = 0;
+        } else {
+            if(this.getRoundcounter() == 0){
+            stats[0] = 2; //start soldier
+            stats[1] = 3; //start archer
+            
+            } else {
+                stats[0] = 0; //nem elérhetőek a parancsok
+                stats[1] = 0;
+            }
         }
+        
+        
+        for(int i = 2; i < 11; ++i){
+            stats[i] = 0;
+        }
+        stats[11] = 1; //demolish
+        stats[12] = this.getCurrentHealth(); //hp
+        stats[13] = this.getMaxHealth(); //maxhp
+        if(this.currentType == Infantry.valueOf("SOLDIER")){
+            stats[14] = 2; //soldier
+        } else{
+            stats[14] = 3; //archer
+        }
+        stats[15] = this.getRoundcounter();
+        stats[16] = -1; //pea
+        stats[17] = -1;
         return stats;
     }
+    
+    public static int[] getBUILD_COST() {
+        return BUILD_COST;
+    }
 
-    /*private int[] freeSpaces(Map map){
-        int[] free = new int[4];
-       		//osszegyujti, mi van az epület kozvetlenn kornyezeteben
-		free[0] = map.getPossess(this.getPositionX(), this.getPositionY() - 1);
-		free[1] = map.getPossess(this.getPositionX() - 1, this.getPositionY());
-		free[2] = map.getPossess(this.getPositionX(), this.getPositionY() + 1);
-		free[3] = map.getPossess(this.getPositionX() + 1, this.getPositionY());
-		
-		return free;
-    }*/
+    
 }

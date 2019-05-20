@@ -1,38 +1,34 @@
 package hu.progtech.vizfacsarok.lordsofthebattlefield.buildings;
 
+import hu.progtech.vizfacsarok.lordsofthebattlefield.Map;
+
+
 public abstract class Building {
 
-    private int[] buildCost;
-    private final int size;
-    private final int id;
+ 
+ 
+   
     private final int positionX;
     private final int positionY;
     private int currentHealth;
     private int maxHealth;
     private final int owner;
 
-    public Building(int[] buildCost, int size, int id, int positionX, int positionY, int maxHealth, int owner){
-        this.buildCost = buildCost;
-        this.size = size;
-        this.id = id;
+    public Building(int positionX, int positionY, int maxHealth, int owner){
+        
+        
+    
         this.positionX = positionX;
         this.positionY = positionY;
         this.currentHealth = maxHealth;
         this.maxHealth = maxHealth;
         this.owner = owner;
+  
     }
 
-    public int[] getBuildCost(){
-        return this.buildCost;
-    }
 
-    public int getSize(){
-        return this.size;
-    }
 
-    public int getId(){
-        return this.id;
-    }
+  
 
     public int getPositionX(){
         return this.positionX;
@@ -65,6 +61,11 @@ public abstract class Building {
         return this.owner;
     }
 	
+    public void demolish(Map map){
+        map.setPossess(this.getPositionX(), this.getPositionY(), 0);
+        map.setBuilding(this.getPositionX(), this.getPositionY(), null);
+    }
+    
 	protected abstract int[] getStats();
 
 }

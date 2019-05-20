@@ -5,14 +5,14 @@ import hu.progtech.vizfacsarok.lordsofthebattlefield.buildings.Building;
 
 import java.util.ArrayList;
 
-public class Attacker extends Unit{
+public abstract class Attacker extends Unit{
     private int damage;
     private int maxRange;
     private int minRange;
     private boolean attacked;
 
-    public Attacker(int armor, int maxHealth, int movementRange, int owner, int[] position, int[] productionCost, int productionTime, int damage, int maxRange, int minRange) {
-        super(armor, maxHealth, movementRange, owner, position, productionCost, productionTime);
+    public Attacker(int armor, int maxHealth, int movementRange, int owner, int[] position,  int damage, int maxRange, int minRange) {
+        super(armor, maxHealth, movementRange, owner, position);
         this.damage = damage;
         this.maxRange = maxRange;
         this.minRange = minRange;
@@ -37,7 +37,6 @@ public class Attacker extends Unit{
                 }
             }
         }
-
         return resultList;
     }
 
@@ -45,18 +44,20 @@ public class Attacker extends Unit{
         attacked = true;
         setActionPoint(getActionPoint()-1);
         int hit = damage - enemy.getArmor();
+        if(hit < 0) { hit = 0;}
         enemy.setHealth(enemy.getHealth()-hit);
         if(enemy.getHealth() <= 0){
-            int[] enemyPos = enemy.getPosition();
-            map.setUnit(enemyPos[0], enemyPos[1], null);
-            map.setPossess(enemyPos[0], enemyPos[1], 0);
+            enemy.die(map);
         }
     }
 
-    public void attack(Building enemy){
+    public void attack(Map map, Building enemy){
         attacked = true;
         setActionPoint(getActionPoint()-1);
         enemy.setCurrentHealth(enemy.getCurrentHealth()-damage);
+        if(enemy.getCurrentHealth() <=0){
+            enemy.demolish(map);
+        }
     }
 
     public int getDamage() {
